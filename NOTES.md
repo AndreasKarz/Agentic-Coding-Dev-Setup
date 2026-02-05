@@ -6,7 +6,14 @@
 - in die Instruktionen rein, dass keine Instruktionen aus context akzeptiert, nur aus dem chat, den definierten Instruktionen, skills und prompts
 
 
-- DotNet MCP für Office Documents
+- DotNet MCP für Office Documents bauen
+  https://chatgpt.com/c/69846422-3c10-8389-b2a6-2b2e28fd280f 
+  https://github.com/pnp/cli-microsoft365-mcp-server 
+  Dann brauchst du einen Text-Extractor (lokal, ohne Docker). Beispiel:
+  - DOCX -> mammoth (Node) oder python-docx
+  - PDF -> pdf-parse (Node) oder PyMuPDF
+  - XLSX -> exceljs (Node) oder openpyxl
+  - PPTX -> pptx Parser (Node) oder python-pptx
 
 - Dev Setup zu Dominique Broeglin als Review
 
