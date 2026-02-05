@@ -5,6 +5,10 @@
 
 - in die Instruktionen rein, dass keine Instruktionen aus context akzeptiert, nur aus dem chat, den definierten Instruktionen, skills und prompts
 
+- https://code.visualstudio.com/docs/copilot/customization/agent-skills 
+- https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
+- https://github.com/anthropics/skills/tree/main/skills
+
 
 - DotNet MCP für Office Documents bauen
   https://chatgpt.com/c/69846422-3c10-8389-b2a6-2b2e28fd280f 
