@@ -4,7 +4,8 @@ Working on
 
 https://github.com/github/awesome-copilot 
 
-
+MonoRepo Setup via Symlink
+https://chatgpt.com/share/6984605c-52a4-8001-83bd-a1ec867fdf9a
 
 
 Kurzfassung:  
