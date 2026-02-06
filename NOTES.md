@@ -7,7 +7,8 @@
 
 - https://code.visualstudio.com/docs/copilot/customization/agent-skills 
 - https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
-- https://github.com/anthropics/skills/tree/main/skills
+- https://github.com/anthropics/skills
+- https://www.youtube.com/watch?v=A-Jo6zz8HUo
 
 
 - DotNet MCP für Office Documents bauen
