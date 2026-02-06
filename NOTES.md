@@ -11,6 +11,10 @@
 - https://www.youtube.com/watch?v=A-Jo6zz8HUo
 
 
+
+- https://github.com/anthropics/prompt-eng-interactive-tutorial
+
+
 - DotNet MCP für Office Documents bauen
   https://chatgpt.com/c/69846422-3c10-8389-b2a6-2b2e28fd280f 
   https://github.com/pnp/cli-microsoft365-mcp-server 
