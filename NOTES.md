@@ -15,6 +15,10 @@
 - https://github.com/anthropics/prompt-eng-interactive-tutorial
 
 
+https://github.com/kuzudb/kuzu-mcp-server
+https://github.com/predictable-labs/ryugraph 
+
+
 - DotNet MCP für Office Documents bauen
   https://chatgpt.com/c/69846422-3c10-8389-b2a6-2b2e28fd280f 
   https://github.com/pnp/cli-microsoft365-mcp-server 
