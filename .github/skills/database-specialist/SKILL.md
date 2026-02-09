@@ -1,13 +1,17 @@
 ---
 name: database-specialist
-description: "Specialist for database work in the SyncHub project — MS SQL Server with Stored Procedures, MongoDB Atlas Cluster with MongoDB.Driver, change-tracker pipelines, data-loader configurations, and database tests with Squadron. Triggers: SqlClient, SqlConnection, SqlCommand, StoredProcedure, SqlExecutionContext, SqlChangeTracker, SqlDataLoader, IMongoCollection, BsonDocument, MongoConventions, SourceRepository, DomainEntityRepository, BulkWriteAsync, IAsyncCursor, MongoResource, SqlServerResource, SyncHub_Database, SyncHub_Connections, ConnectionsOptions, MongoDB-Indexing, Change-Tracker-Cron, Quartz-Scheduling."
+description: "Specialist for SyncHub data-pipeline implementation — writing change-tracker and data-loader configurations, stored procedure integration, MongoDB repository code, DI registration, and Squadron-based database tests. Triggers: SqlClient, SqlConnection, SqlCommand, StoredProcedure, SqlExecutionContext, SqlChangeTracker, SqlDataLoader, IMongoCollection, BsonDocument, MongoConventions, SourceRepository, DomainEntityRepository, BulkWriteAsync, IAsyncCursor, MongoResource, SqlServerResource, SyncHub_Database, SyncHub_Connections, ConnectionsOptions, Change-Tracker-Cron, Quartz-Scheduling, new SyncHub entity setup."
 ---
 
 # Database Specialist — SyncHub
 
-Implement and troubleshoot all database work in the SyncHub project. Covers MS SQL Server (Stored Procedures, Change Tracking) and MongoDB Atlas (Repositories, Indexing, Bulk Operations).
+Implement and troubleshoot SyncHub data-pipeline code: change-tracker jobs, data-loader configurations, SQL stored procedure integration, MongoDB repository patterns, and database tests.
 
-> **Scope**: SyncHub-specific database patterns only. For general backend patterns (GraphQL, MassTransit, Startup) → `backend-developer` skill. For test conventions → `tests.instructions.md`.
+> **Scope**: SyncHub pipeline implementation only.
+> - For **MongoDB analysis, indexing strategy, and query optimization** → delegate to `MongoDB Expert` agent.
+> - For **SQL Server query optimization, execution plans, and schema design** → delegate to `MS-SQL Expert` agent.
+> - For general backend patterns (GraphQL, MassTransit, Startup) → `backend-developer` skill.
+> - For test conventions → `tests.instructions.md`.
 
 ## Architecture Overview
 

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[Intro in german](https://www.youtube.com/watch?v=A-Jo6zz8HUo)
+> Video walkthrough (German): [YouTube](https://www.youtube.com/watch?v=A-Jo6zz8HUo)
 
 This repository contains a complete developer setup for **agent-based coding with GitHub Copilot** in VS Code. It solves two problems:
 
@@ -146,9 +146,45 @@ Get-Item ".github\instructions" | Select-Object Name, LinkTarget
 
 ---
 
-## Code with Vibes
+## Working with the Agent
 
 Once the setup is in place, it's time to do the actual work. This chapter explains how the AI configuration is structured and how to use it effectively.
+
+### Architecture Overview
+
+The following diagram shows how the components interact:
+
+```mermaid
+flowchart TB
+    User["Developer (VS Code)"]
+    Chat["Copilot Chat\n(Agent Mode)"]
+
+    subgraph gh [".github/ — AI Configuration"]
+        AGENTS["AGENTS.md\n(Main Agent)"]
+        Instructions["instructions/\ngeneral · tests"]
+        Agents["agents/\nC# · Debug · DevOps\nMongoDB · MSSQL\nAPI Stitching"]
+        Skills["skills/\nbackend-developer\ncode-reviewer\ndatabase-specialist\ndevops-specialist\nservice-scaffolder\n..."]
+        Prompts["prompts/\nImplement_from_PBI"]
+    end
+
+    subgraph mcp ["MCP Servers"]
+        ADO["Azure DevOps"]
+        Mongo["MongoDB"]
+        MSSQL["SQL Server"]
+        Neo4j["Neo4j\n(Knowledge Graph)"]
+        MSLearn["Microsoft Learn"]
+        Memory["Memory\n(Graph Memory)"]
+        SeqThink["Sequential\nThinking"]
+    end
+
+    User --> Chat
+    Chat --> AGENTS
+    AGENTS --> Instructions
+    AGENTS --> Agents
+    AGENTS --> Skills
+    Chat --> Prompts
+    Chat --> mcp
+```
 
 ### Structure
 
@@ -161,6 +197,7 @@ All AI-related artifacts are in the `.github/` folder and are automatically reco
 │   ├── general.instructions.md    #   → Applies to all files (**)
 │   └── tests.instructions.md      #   → Applies only to test files (**/test/**/*Tests.cs)
 ├── agents/                        # Specialized agents
+│   ├── APIStitchingExpert.agent.md #   → Schema stitching, query delegation
 │   ├── CSharpExpert.agent.md      #   → C#/.NET design, patterns, performance
 │   ├── DebugExpert.agent.md       #   → Build errors, runtime exceptions
 │   ├── DevOpsExpert.agent.md      #   → Pipelines, Docker, Kubernetes
@@ -169,7 +206,9 @@ All AI-related artifacts are in the `.github/` folder and are automatically reco
 ├── skills/                        # Domain-specific knowledge
 │   ├── backend-developer/         #   → HotChocolate, MassTransit, MongoDB repos
 │   ├── code-reviewer/             #   → Code review per SwissLife standards
-│   ├── database-specialist/       #   → SyncHub, Change Tracker, SQL↔MongoDB
+│   ├── database-specialist/       #   → SyncHub pipeline implementation
+│   ├── devops-specialist/         #   → F2C pipeline templates, Helm, K8s patterns
+│   ├── service-scaffolder/        #   → Scaffold new microservices end-to-end
 │   ├── prompt-creator/            #   → Write and optimize prompts
 │   └── ...                        #   → other skills (docx, pdf, xlsx, pptx, ...)
 └── prompts/                       # Reusable prompt workflows
@@ -476,7 +515,40 @@ This setup gives you an AI coding agent that:
 - **Knows your conventions** — through Instructions and Skills in the `.github/` folder
 - **Can access your tools** — Azure DevOps, MongoDB, SQL Server, Neo4j, Microsoft Docs
 - **Works in a structured way** — through predefined prompts for recurring workflows
-- **Can specialize** — through agents for C#, debugging, DevOps, databases
+- **Can specialize** — through agents for C#, debugging, DevOps, databases, API stitching
 
 The key to effective work: **provide context, work incrementally, validate results.** The agent is a powerful tool — but you remain the architect.
+
+---
+
+## Smoke Test
+
+After setup, verify everything works by asking these three questions in Copilot Chat (Agent Mode):
+
+### 1. MCP Server Connectivity
+
+```
+Search Microsoft Learn for "HotChocolate DataLoader best practices".
+```
+
+Expected: The agent uses the `microsoft-learn` MCP server and returns documentation results.
+
+### 2. Agent & Skill Loading
+
+```
+Review the coding standards that apply to test files in this project.
+```
+
+Expected: The agent references `tests.instructions.md` and summarizes the test conventions (xUnit, Moq, FluentAssertions, naming pattern `MethodName_Scenario_ExpectedBehavior`).
+
+### 3. Sequential Thinking
+
+```
+Break down the steps needed to add a new "Notes" property (string, optional) 
+to an existing entity in the Consultation service.
+```
+
+Expected: The agent uses sequential thinking to produce a layered plan (Abstractions → Core → DataAccess → GraphQL → Tests).
+
+If all three produce meaningful results, your setup is working correctly.
 
