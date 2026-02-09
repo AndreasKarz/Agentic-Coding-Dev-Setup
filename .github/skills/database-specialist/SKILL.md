@@ -1,52 +1,52 @@
 ---
 name: database-specialist
-description: "Spezialist für Datenbankarbeit im SyncHub-Projekt — MS SQL Server mit Stored Procedures, MongoDB Atlas Cluster mit MongoDB.Driver, Change-Tracker-Pipelines, Data-Loader-Konfigurationen und Datenbank-Tests mit Squadron. Triggers: SqlClient, SqlConnection, SqlCommand, StoredProcedure, SqlExecutionContext, SqlChangeTracker, SqlDataLoader, IMongoCollection, BsonDocument, MongoConventions, SourceRepository, DomainEntityRepository, BulkWriteAsync, IAsyncCursor, MongoResource, SqlServerResource, SyncHub_Database, SyncHub_Connections, ConnectionsOptions, MongoDB-Indexing, Change-Tracker-Cron, Quartz-Scheduling."
+description: "Specialist for database work in the SyncHub project — MS SQL Server with Stored Procedures, MongoDB Atlas Cluster with MongoDB.Driver, change-tracker pipelines, data-loader configurations, and database tests with Squadron. Triggers: SqlClient, SqlConnection, SqlCommand, StoredProcedure, SqlExecutionContext, SqlChangeTracker, SqlDataLoader, IMongoCollection, BsonDocument, MongoConventions, SourceRepository, DomainEntityRepository, BulkWriteAsync, IAsyncCursor, MongoResource, SqlServerResource, SyncHub_Database, SyncHub_Connections, ConnectionsOptions, MongoDB-Indexing, Change-Tracker-Cron, Quartz-Scheduling."
 ---
 
 # Database Specialist — SyncHub
 
-Leitfaden für alle Datenbankarbeiten im SyncHub-Projekt. Deckt MS SQL Server (Stored Procedures, Change Tracking) und MongoDB Atlas (Repositories, Indexing, Bulk Operations) ab.
+Guide for all database work in the SyncHub project. Covers MS SQL Server (Stored Procedures, Change Tracking) and MongoDB Atlas (Repositories, Indexing, Bulk Operations).
 
-> **Scope**: Dieses Skill behandelt SyncHub-spezifische Datenbankpatterns. Für allgemeine Backend-Patterns (GraphQL, MassTransit, Startup) → `backend-developer` Skill. Für Testkonventionen → `tests.instructions.md`.
+> **Scope**: SyncHub-specific database patterns only. For general backend patterns (GraphQL, MassTransit, Startup) → `backend-developer` skill. For test conventions → `tests.instructions.md`.
 
-## Architektur-Überblick
+## Architecture Overview
 
-SyncHub ist eine Datenpipeline, die Quelldaten (MS SQL) in eine MongoDB-Zieldatenbank synchronisiert:
+SyncHub is a data pipeline that synchronizes source data (MS SQL) into a MongoDB target database:
 
 ```
 SQL Server (Stored Procedures)
-  → SqlChangeTracker (Quartz-Job, Cron)
-    → Keys extrahieren
-      → MongoDB (Keys, Transactions speichern)
-        → DomainProcessor (Transformation)
-          → MongoDB (Snapshots, Hashes speichern)
+  → SqlChangeTracker (Quartz job, Cron)
+    → Extract keys
+      → MongoDB (store keys, transactions)
+        → DomainProcessor (transformation)
+          → MongoDB (store snapshots, hashes)
 ```
 
-### Relevante Pfade im Repo
+### Relevant Paths in the Repo
 
-| Bereich | Pfad |
+| Area | Path |
 |---|---|
-| SQL-Client & Execution | `src/DataAccess/` |
-| SQL-Konfigurationen | `src/Abstractions/Configuration/` |
+| SQL Client & Execution | `src/DataAccess/` |
+| SQL Configurations | `src/Abstractions/Configuration/` |
 | Change Tracker & Loader | `src/Core/ChangeTracker/`, `src/Core/Loader/` |
-| MongoDB-Repositories | `src/Repository/` |
-| DI-Registrierung | `src/Core/SyncHubCoreCollectionExtensions.cs` |
-| Domain-Konfiguration | `src/Repository/ConfigureDomainSettings.cs` |
+| MongoDB Repositories | `src/Repository/` |
+| DI Registration | `src/Core/SyncHubCoreCollectionExtensions.cs` |
+| Domain Configuration | `src/Repository/ConfigureDomainSettings.cs` |
 | Tests | `test/` |
 
 ## MS SQL Server
 
-### SqlClient — Kern der SQL-Ausführung
+### SqlClient — Core SQL Execution
 
-`SqlClient.cs` in `src/DataAccess/` nutzt `Microsoft.Data.SqlClient` (nicht `System.Data.SqlClient`). Key-Eigenschaften:
+`SqlClient.cs` in `src/DataAccess/` uses `Microsoft.Data.SqlClient` (not `System.Data.SqlClient`). Key properties:
 
-- `CommandType.StoredProcedure` — ausschliesslich Stored Procedures, kein Inline-SQL
-- `CommandTimeout` = 10 Minuten
-- Polly `WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(5))` für transiente Fehler
-- Streaming via `IAsyncEnumerable<SqlTable>` mit optionalem Batching
+- `CommandType.StoredProcedure` — exclusively stored procedures, no inline SQL
+- `CommandTimeout` = 10 minutes
+- Polly `WaitAndRetry(3, retryAttempt => TimeSpan.FromSeconds(5))` for transient errors
+- Streaming via `IAsyncEnumerable<SqlTable>` with optional batching
 
 ```csharp
-// Vereinfachtes Pattern aus SqlClient.cs
+// Simplified pattern from SqlClient.cs
 await using SqlConnection connection = new(context.ConnectionString);
 await connection.OpenAsync(cancellationToken);
 
@@ -56,7 +56,7 @@ await using SqlCommand command = new(context.StoredProcedure, connection)
     CommandTimeout = (int)TimeSpan.FromMinutes(10).TotalSeconds
 };
 
-// Parameter hinzufügen
+// Add parameters
 foreach (SqlParameter parameter in context.Parameters)
 {
     command.Parameters.Add(parameter);
@@ -67,7 +67,7 @@ await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellation
 
 ### SqlExecutionContext
 
-Internes Kontextobjekt für SQL-Aufrufe:
+Internal context object for SQL calls:
 
 ```csharp
 internal class SqlExecutionContext
@@ -80,20 +80,20 @@ internal class SqlExecutionContext
 }
 ```
 
-### Zwei SQL-Client-Typen
+### Two SQL Client Types
 
-| Client | Implementiert | Batching | Zweck |
+| Client | Implements | Batching | Purpose |
 |---|---|---|---|
-| `SqlChangeTrackerClient` | `ISqlChangeTrackerClient` | Ja | Periodische Änderungserkennung via Cron |
-| `SqlDataLoaderClient` | `ISqlDataLoaderClient` | Nein | Vollladen von Entitätendaten |
+| `SqlChangeTrackerClient` | `ISqlChangeTrackerClient` | Yes | Periodic change detection via Cron |
+| `SqlDataLoaderClient` | `ISqlDataLoaderClient` | No | Full entity data loading |
 
-Beide erstellen ein `SqlExecutionContext` aus ihrer jeweiligen Konfiguration.
+Both create a `SqlExecutionContext` from their respective configuration.
 
-### SQL-Konfigurationen
+### SQL Configurations
 
 #### SqlChangeTrackerConfiguration
 
-Implementiert `IChangeTrackerConfiguration`:
+Implements `IChangeTrackerConfiguration`:
 
 ```csharp
 public class SqlChangeTrackerConfiguration : IChangeTrackerConfiguration
@@ -110,17 +110,17 @@ public class SqlChangeTrackerConfiguration : IChangeTrackerConfiguration
 
     public void Resolve(ConnectionsOptions options)
     {
-        // Löst ConnectionString über ConnectionsOptions auf
+        // Resolves ConnectionString via ConnectionsOptions
     }
 }
 ```
 
-- `CronSchedule` Default: `"0 {0} * ? * * *"` — Platzhalter `{0}` wird durch Minute ersetzt
-- `Resolve(ConnectionsOptions)` — Verbindungsstring aus benannter Konfiguration auflösen
+- `CronSchedule` default: `"0 {0} * ? * * *"` — placeholder `{0}` is replaced with minute value
+- `Resolve(ConnectionsOptions)` — resolve connection string from named configuration
 
 #### SqlLoaderConfiguration
 
-Implementiert `ILoaderConfiguration`:
+Implements `ILoaderConfiguration`:
 
 ```csharp
 public class SqlLoaderConfiguration : ILoaderConfiguration
@@ -129,31 +129,31 @@ public class SqlLoaderConfiguration : ILoaderConfiguration
     public string ResultPrimaryKeyColumnName { get; set; }
     public string QueryParameterName { get; set; }
     public string QueryParameterType { get; set; }
-    public string QueryParameterTypeName { get; set; }  // Für TVP-Support
+    public string QueryParameterTypeName { get; set; }  // For TVP support
     public string ConnectionString { get; set; }
 
     public void Resolve(ConnectionsOptions options) { /* ... */ }
 }
 ```
 
-### Verbindungsauflösung
+### Connection Resolution
 
-Verbindungsstrings werden **nicht** direkt in Konfigurationen gespeichert, sondern über `ConnectionsOptions` aufgelöst:
+Connection strings are **not** stored directly in configurations but resolved via `ConnectionsOptions`:
 
 ```
-Config-Sektion: SyncHub_Connections
-  → ConnectionsOptions (Name/Value-Paare)
-    → Loader/Tracker rufen Resolve(ConnectionsOptions) auf
+Config section: SyncHub_Connections
+  → ConnectionsOptions (name/value pairs)
+    → Loader/Tracker call Resolve(ConnectionsOptions)
 ```
 
 ## Change Tracker Pipeline
 
 ### SqlChangeTracker
 
-Registriert Quartz-Jobs mit Cron-Scheduling:
+Registers Quartz jobs with Cron scheduling:
 
 ```csharp
-// Vereinfachtes Pattern
+// Simplified pattern
 JobBuilder.Create<SqlChangeTrackerJob>()
     .WithIdentity(jobKey)
     .Build();
@@ -165,27 +165,27 @@ TriggerBuilder.Create()
 
 ### SqlChangeTrackerJob
 
-Attribute: `[DisallowConcurrentExecution, PersistJobDataAfterExecution]`
+Attributes: `[DisallowConcurrentExecution, PersistJobDataAfterExecution]`
 
-Erweitert `TrackableJob`. Pipeline-Ablauf:
+Extends `TrackableJob`. Pipeline flow:
 
-1. Domain-Konfiguration laden
-2. Aktuelle Transaction-ID aus MongoDB holen
-3. Stored Procedure mit Transaction-ID ausführen
-4. Geänderte Keys extrahieren
-5. Keys in MongoDB speichern (`{entity}_keys`)
-6. Neue Transaction-ID in MongoDB speichern (`{entity}_transactions`)
-7. DomainProcessor triggern
+1. Load domain configuration
+2. Fetch current transaction ID from MongoDB
+3. Execute stored procedure with transaction ID
+4. Extract changed keys
+5. Store keys in MongoDB (`{entity}_keys`)
+6. Store new transaction ID in MongoDB (`{entity}_transactions`)
+7. Trigger DomainProcessor
 
-OpenTelemetry-Tracing mit `Activity` und `synchub.changetracker.*`-Tags ist obligatorisch.
+OpenTelemetry tracing with `Activity` and `synchub.changetracker.*` tags is mandatory.
 
-### Domain-Konfiguration
+### Domain Configuration
 
-`ConfigureDomainSettings.cs` nutzt `_t`-Diskriminator-Feld für polymorphe Typ-Auflösung:
+`ConfigureDomainSettings.cs` uses the `_t` discriminator field for polymorphic type resolution:
 
 ```
-DomainSettings:Configurations → Array von Konfigurationen
-  → _t-Feld bestimmt den Typ:
+DomainSettings:Configurations → Array of configurations
+  → _t field determines type:
     - SqlLoaderConfiguration
     - RestLoaderConfiguration
     - GraphQLLoaderConfiguration
@@ -194,22 +194,22 @@ DomainSettings:Configurations → Array von Konfigurationen
     - FieldKeyServiceBusChangeTrackerConfiguration
 ```
 
-### Konfigurations-Sektionen
+### Configuration Sections
 
-| Sektion | Zweck |
+| Section | Purpose |
 |---|---|
-| `SyncHub_Connections` | Benannte Verbindungsstrings (Name/Value) |
+| `SyncHub_Connections` | Named connection strings (name/value) |
 | `SyncHub_Database` | MongoDB ConnectionString + DatabaseName |
-| `SyncHub_Messaging` | Service-Bus-Konfiguration |
-| `SyncHub_Audit` | Audit-Einstellungen |
-| `DomainSettings:Configurations` | Loader- und Tracker-Definitionen |
-| `DomainSettings:HostSettings` | Host-spezifische Einstellungen |
+| `SyncHub_Messaging` | Service Bus configuration |
+| `SyncHub_Audit` | Audit settings |
+| `DomainSettings:Configurations` | Loader and tracker definitions |
+| `DomainSettings:HostSettings` | Host-specific settings |
 
 ## MongoDB Atlas
 
 ### MongoConventions
 
-**Jedes Repository** muss `MongoConventions.Init()` im statischen Konstruktor aufrufen:
+**Every repository** must call `MongoConventions.Init()` in its static constructor:
 
 ```csharp
 public class MyRepository
@@ -221,28 +221,28 @@ public class MyRepository
 }
 ```
 
-### Collection-Namenskonvention
+### Collection Naming Convention
 
-Collections werden dynamisch nach Entity-Typ benannt:
+Collections are dynamically named by entity type:
 
-| Collection | Pattern | Zweck |
+| Collection | Pattern | Purpose |
 |---|---|---|
-| `{EntityType.Name}_snapshots` | Typisiert (`Snapshot`) | Domain-Entity-Snapshots |
-| `{EntityType.Name}_keys` | `BsonDocument` | Source-Entity-Keys-Queue |
-| `{EntityType.Name}_transactions` | `BsonDocument` | Change-Tracker-Transaktionen |
-| `{EntityType.Name}_audit_keys` | Typisiert (`PipelineAuditEntry`) | Pipeline-Audit-Einträge |
-| `{EntityType.Name}_hashes` | Legacy | Hash-Speicher (Legacy) |
-| `__domains` | Typisiert (`DomainConfiguration`) | Domain-Konfigurationen |
-| `__settings` | Typisiert (`HostSettings`) | Host-Einstellungen |
+| `{EntityType.Name}_snapshots` | Typed (`Snapshot`) | Domain entity snapshots |
+| `{EntityType.Name}_keys` | `BsonDocument` | Source entity keys queue |
+| `{EntityType.Name}_transactions` | `BsonDocument` | Change tracker transactions |
+| `{EntityType.Name}_audit_keys` | Typed (`PipelineAuditEntry`) | Pipeline audit entries |
+| `{EntityType.Name}_hashes` | Legacy | Hash storage (legacy) |
+| `__domains` | Typed (`DomainConfiguration`) | Domain configurations |
+| `__settings` | Typed (`HostSettings`) | Host settings |
 
-Systemcollections (`__domains`, `__settings`) haben doppelten Unterstrich als Präfix.
+System collections (`__domains`, `__settings`) use double underscore prefix.
 
-### SourceRepository — BsonDocument-basiert
+### SourceRepository — BsonDocument-Based
 
-Arbeitet mit `IMongoCollection<BsonDocument>` für `_transactions` und `_keys`:
+Works with `IMongoCollection<BsonDocument>` for `_transactions` and `_keys`:
 
 ```csharp
-// Index-Erstellung
+// Index creation
 CreateIndexModel<BsonDocument> index = new(
     Builders<BsonDocument>.IndexKeys
         .Ascending("SourceIdentifier")
@@ -250,7 +250,7 @@ CreateIndexModel<BsonDocument> index = new(
         .Ascending("TransactionId"),
     new CreateIndexOptions { Background = true });
 
-// Bulk-Operationen für Löschungen
+// Bulk delete operations
 List<DeleteOneModel<BsonDocument>> deletes = keys
     .Select(k => new DeleteOneModel<BsonDocument>(
         Builders<BsonDocument>.Filter.Eq("_id", k)))
@@ -258,22 +258,22 @@ List<DeleteOneModel<BsonDocument>> deletes = keys
 
 await collection.BulkWriteAsync(deletes, new BulkWriteOptions { IsOrdered = false });
 
-// Deserialisierung
+// Deserialization
 BsonSerializer.Deserialize<T>(document);
 ```
 
-### DomainEntityRepository — Typisiert + BsonDocument
+### DomainEntityRepository — Typed + BsonDocument
 
-Verwaltet `_snapshots` und `_hashes` mit umfangreichem Index-Management:
+Manages `_snapshots` and `_hashes` with extensive index management:
 
 ```csharp
-// Standard-Indexes
+// Standard indexes
 CreateIndexModel<Snapshot>[] indexes = new[]
 {
-    // Key-Index
+    // Key index
     new CreateIndexModel<Snapshot>(
         Builders<Snapshot>.IndexKeys.Ascending(x => x.Key)),
-    // Hash-Index
+    // Hash index
     new CreateIndexModel<Snapshot>(
         Builders<Snapshot>.IndexKeys.Ascending(x => x.Hash)),
     // Unique Key+Version
@@ -285,9 +285,9 @@ CreateIndexModel<Snapshot>[] indexes = new[]
 };
 ```
 
-Domain-spezifische Indexes auf `Entity.*`-Feldern werden zusätzlich erstellt.
+Domain-specific indexes on `Entity.*` fields are additionally created.
 
-#### Bulk-Upsert Pattern
+#### Bulk Upsert Pattern
 
 ```csharp
 List<ReplaceOneModel<Snapshot>> updates = snapshots
@@ -299,9 +299,9 @@ List<ReplaceOneModel<Snapshot>> updates = snapshots
 await collection.BulkWriteAsync(updates);
 ```
 
-#### IAsyncCursor für Streaming
+#### IAsyncCursor for Streaming
 
-Für grosse Datenmengen:
+For large data volumes:
 
 ```csharp
 using IAsyncCursor<BsonDocument> cursor = await collection
@@ -311,16 +311,16 @@ while (await cursor.MoveNextAsync(cancellationToken))
 {
     foreach (BsonDocument document in cursor.Current)
     {
-        // Verarbeitung
+        // Processing
     }
 }
 ```
 
-> **Kompatibilitätshinweis**: `$literal`-Syntax vermeiden — nicht unterstützt auf MongoDB Server < 4.4 mit MongoDB.Driver > 3.x.
+> **Compatibility note**: Avoid `$literal` syntax — not supported on MongoDB Server < 4.4 with MongoDB.Driver > 3.x.
 
 ### ConfigurationRepository — Caching
 
-Nutzt `IMemoryCache` mit 1-Tag-Ablauf:
+Uses `IMemoryCache` with 1-day expiration:
 
 ```csharp
 _memoryCache.GetOrCreateAsync(cacheKey, entry =>
@@ -330,11 +330,11 @@ _memoryCache.GetOrCreateAsync(cacheKey, entry =>
 });
 ```
 
-Unique-Index auf Domain-Name sichert Eindeutigkeit.
+Unique index on domain name ensures uniqueness.
 
 ### AuditRepository
 
-`IMongoCollection<PipelineAuditEntry>` für `_audit_keys` mit Compound-Index:
+`IMongoCollection<PipelineAuditEntry>` for `_audit_keys` with compound index:
 
 ```csharp
 Builders<PipelineAuditEntry>.IndexKeys
@@ -342,42 +342,42 @@ Builders<PipelineAuditEntry>.IndexKeys
     .Ascending(x => x.Key)
 ```
 
-## DI-Registrierung
+## DI Registration
 
-### Core-Services
+### Core Services
 
 ```csharp
 // SyncHubCoreCollectionExtensions.cs
 services.AddSyncHubCore();  // SqlChangeTracker, ServiceBusChangeTracker, etc.
 
 services.AddDomains<TDomainReference>();  // ConnectionsOptions, DomainsResolver
-// → Registriert ConnectionsOptions aus SyncHub_Connections
+// → Registers ConnectionsOptions from SyncHub_Connections
 
-services.AddScheduling();  // Quartz-Jobs: SqlChangeTrackerJob, AuditJob, DomainProcessorJob
+services.AddScheduling();  // Quartz jobs: SqlChangeTrackerJob, AuditJob, DomainProcessorJob
 ```
 
-### Relevante Config-Bindungen
+### Relevant Config Bindings
 
 ```csharp
-// ConnectionsOptions aus benannter Sektion
+// ConnectionsOptions from named section
 services.Configure<ConnectionsOptions>(
     configuration.GetSection("SyncHub_Connections"));
 ```
 
-## Datenbank-Tests
+## Database Tests
 
-### Squadron für Test-Infrastruktur
+### Squadron for Test Infrastructure
 
-Nutze Squadron für echte Datenbankinstanzen in Tests:
+Use Squadron for real database instances in tests:
 
-| Resource | Zweck |
+| Resource | Purpose |
 |---|---|
-| `MongoResource` | Standalone MongoDB für einfache Tests |
-| `MongoReplicaSetResource` | MongoDB Replica Set (für Transaktionen/Change Streams) |
-| `SqlServerResource<SqlServerOptions>` | SQL Server Container |
+| `MongoResource` | Standalone MongoDB for simple tests |
+| `MongoReplicaSetResource` | MongoDB Replica Set (for transactions/change streams) |
+| `SqlServerResource<SqlServerOptions>` | SQL Server container |
 
 ```csharp
-// MongoDB-Test-Setup
+// MongoDB test setup
 public class MyRepositoryTests : IClassFixture<MongoResource>
 {
     private readonly IMongoDatabase _database;
@@ -390,7 +390,7 @@ public class MyRepositoryTests : IClassFixture<MongoResource>
 ```
 
 ```csharp
-// SQL Server-Test-Setup
+// SQL Server test setup
 public class MySqlTests : IClassFixture<SqlServerResource<SqlServerOptions>>
 {
     public MySqlTests(SqlServerResource<SqlServerOptions> sqlResource)
@@ -400,53 +400,53 @@ public class MySqlTests : IClassFixture<SqlServerResource<SqlServerOptions>>
 }
 ```
 
-### System-Tests mit beiden Datenbanken
+### System Tests with Both Databases
 
 ```csharp
 public class SystemTests
     : IClassFixture<MongoResource>,
       IClassFixture<SqlServerResource<SqlServerOptions>>
 {
-    // Beide Datenbanken für End-to-End-Pipeline-Tests
+    // Both databases for end-to-end pipeline tests
 }
 ```
 
-### MongoDB-Fixtures laden
+### Loading MongoDB Fixtures
 
 ```csharp
-// Datenbank aus JSON-Dateien erstellen
+// Create database from JSON files
 mongoResource.CreateDatabase(new CreateDatabaseFromFilesOptions
 {
-    // Fixture-Dateien für Test-Collections
+    // Fixture files for test collections
 });
 ```
 
-### Test-Konfigurationsoverrides
+### Test Configuration Overrides
 
 ```csharp
-// Test-appsettings überschreiben
+// Override test appsettings
 configuration["SyncHub_Database:ConnectionString"] = mongoResource.ConnectionString;
 configuration["SyncHub_Database:DatabaseName"] = database.DatabaseNamespace.DatabaseName;
 configuration["SyncHub_Connections:Values:0:Name"] = "MyConnection";
 configuration["SyncHub_Connections:Values:0:Value"] = sqlResource.ConnectionString;
 ```
 
-### Snapshooter für Ergebnisprüfung
+### Snapshooter for Result Verification
 
-Nutze `Snapshooter.Xunit` für deterministische Snapshot-Vergleiche:
+Use `Snapshooter.Xunit` for deterministic snapshot comparisons:
 
 ```csharp
 result.MatchSnapshot();
 ```
 
-## Checkliste für neue Entities
+## Checklist for New Entities
 
-Bei der Einrichtung einer neuen SyncHub-Entity:
+When setting up a new SyncHub entity:
 
-1. **SQL Stored Procedure** — Sicherstellen, dass die SP existiert und die erwarteten Spalten liefert
-2. **SqlLoaderConfiguration** — Loader-Konfiguration mit richtiger SP und Verbindung definieren
-3. **SqlChangeTrackerConfiguration** — Tracker mit SP, Cron-Schedule und Verbindung definieren
-4. **ConnectionsOptions** — Benannten Verbindungsstring in `SyncHub_Connections` registrieren
-5. **MongoDB Collections** — Werden automatisch erstellt, aber Indexes prüfen
-6. **Domain-spezifische Indexes** — Auf `Entity.*`-Feldern definieren, wenn Abfragen benötigt
-7. **Tests** — Repository-Tests mit Squadron + Snapshooter, System-Tests mit beiden DBs
+1. **SQL Stored Procedure** — Ensure the SP exists and returns the expected columns
+2. **SqlLoaderConfiguration** — Define loader configuration with correct SP and connection
+3. **SqlChangeTrackerConfiguration** — Define tracker with SP, Cron schedule, and connection
+4. **ConnectionsOptions** — Register named connection string in `SyncHub_Connections`
+5. **MongoDB Collections** — Created automatically, but verify indexes
+6. **Domain-specific indexes** — Define on `Entity.*` fields when queries are needed
+7. **Tests** — Repository tests with Squadron + Snapshooter, system tests with both DBs

