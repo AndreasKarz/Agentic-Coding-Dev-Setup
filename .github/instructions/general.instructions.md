@@ -73,6 +73,6 @@ Fusion-Backend/
 - HotChocolate for GraphQL implementation
 - Resolvers following clean architecture principles
 - Input/output types separate from domain entities
-- Use Input/output types over prior to separate parameters
-- Prefer implementation-firsta approach over schema-first
+- Prefer Input/Output types over separate parameters for mutations
+- Prefer implementation-first approach over schema-first
 - Leverage HotChocolate's built-in mutation conventions for consistent error handling and response patterns 

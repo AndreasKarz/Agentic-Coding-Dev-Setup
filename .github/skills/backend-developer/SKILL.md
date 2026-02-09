@@ -11,18 +11,7 @@ Guide for developing Fusion-Backend and SyncHub microservices. Covers domain-spe
 
 ## Architecture Quick Reference
 
-### Domain Services
-
-Each domain service lives under `src/<Domain>/` with standardized layers:
-
-| Layer | Purpose |
-|---|---|
-| `Abstractions` | Interfaces, contracts, domain models, enums |
-| `Core` | Business logic, application services, MassTransit consumers |
-| `DataAccess` | MongoDB repositories, database context |
-| `GraphQL` | HotChocolate resolvers, types, middleware |
-| `Host` | ASP.NET Core startup, DI registration |
-| `Worker` | Background services, message handlers |
+Architecture, layer definitions, dependency rules, and coding standards are defined in `general.instructions.md` (always loaded). The following covers domain-specific patterns only.
 
 **Known domains**: Contract, Consultation, Profile, Document, DocConnector, Onboarding, EvServices, ContractInternal.
 

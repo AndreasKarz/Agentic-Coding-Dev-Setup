@@ -5,7 +5,7 @@ description: "Use this skill when working on email, SMS, or push notification te
 
 # Email Template Developer
 
-Guide for authoring and maintaining Swiss Life notification templates across the Handlebars template ecosystem. Covers template authoring conventions, HTML email constraints, visual testing, backend template processing, and multi-tenant deployment.
+Author and maintain Swiss Life notification templates across the Handlebars template ecosystem. Covers template authoring conventions, HTML email constraints, visual testing, backend template processing, and multi-tenant deployment.
 
 > **Scope**: Template authoring in Fusion-Notification-Core-Templates (ADO) and backend template engine understanding in sl-chid-notification (GitHub). For general backend service work, use the `backend-developer` skill.
 

@@ -13,7 +13,7 @@ applyTo: "**/test/**/*Tests.cs"
 - Test class names should end with "Tests" (e.g., UserServiceTests)
 - Test method names should follow the pattern: MethodName_Scenario_ExpectedBehavior
 - Use descriptive names that clearly indicate what is being tested
-- Name the result of the in the Act-part of the test either `result` or `act` when testing for exception.
+- Name the result in the Act part either `result` or `act` when testing for exceptions.
 
 # Test Data and Setup
 - Mocks: 
@@ -21,14 +21,14 @@ applyTo: "**/test/**/*Tests.cs"
   Pre-configure default behaviour in the constructor when appropriate
   Use MockBehavior.Strict as default
 - Instantiate the class under test in the constructor of the test class
-- Avoid to create same test data every time. Instead, use sample data classes
+- Avoid creating the same test data repeatedly. Instead, use sample data classes.
 - When using Squadron, ensure to re-use the instance by creating a collection fixture
 
 # Test Structure
 - Follow Arrange-Act-Assert (AAA) pattern in all tests
 - Use separate lines or comments to clearly delineate AAA sections
 - Keep tests focused on a single behavior or scenario
-- Having no or few lines in the Arrange section is a preferred practice
+- Having no or few lines in the Arrange section is preferred.
 
 # Assertions
 - Use FluentAssertions for consistency reasons for existing tests
@@ -41,7 +41,7 @@ applyTo: "**/test/**/*Tests.cs"
 
 # Mocking and Dependencies
 - Use clear, descriptive variable names for mocks
-- Again, avoid to define mocks inside the test method when possible
+- Avoid defining mocks inside the test method when possible.
 - Verify mock interactions when behavior verification is important
 - When verifying mock interactions, avoid using It.IsAny<T>() if a more specific constraint can be used
 

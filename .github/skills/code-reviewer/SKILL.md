@@ -30,7 +30,7 @@ Use Sequential Thinking to process each changed file against the full checklist 
 - **No HotChocolate dependencies in Core layer** — HotChocolate packages belong in `GraphQL` only
 - **Query resolvers stay in Query class** — do not move query-level field resolvers into `ObjectType` or type extension classes. `Query.envelopes` belongs in `Query.cs`, not `EnvelopeType.cs`
 - **No business logic in Api layer** — Api only stitches and rewrites queries
-- **Layer dependency rules**: `Core` → `Abstractions`, `DataAccess` → `Abstractions`/`Core`, `GraphQL` → `Abstractions`/`Core`
+- **Layer dependency rules** — per `general.instructions.md`
 - **Shared code in Shared folder** — when multiple hosts need the same class, move to a shared project
 
 ### Security (BLOCKER)
@@ -42,7 +42,7 @@ Use Sequential Thinking to process each changed file against the full checklist 
 
 ### Naming Conventions (IMPROVEMENT)
 
-- **Test names**: `MethodUnderTest_Scenario_ExpectedResult` — no `_Should_`. Reference: [MS Best Practices](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#follow-test-naming-standards)
+- **Test names**: `MethodName_Scenario_ExpectedBehavior` — no `_Should_`. Reference: `tests.instructions.md`
 - **Two-letter acronyms uppercase**: `ML`, `IO`, `DB` not `Ml`, `Io`, `Db`. Reference: [Capitalization Rules](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/capitalization-conventions)
 - **Domain naming conventions**: `Message` not `State` for workflow/MassTransit data classes
 - **Method names consistent**: check sibling methods for naming pattern, flag deviations

@@ -5,7 +5,7 @@ description: "Specialist for database work in the SyncHub project — MS SQL Ser
 
 # Database Specialist — SyncHub
 
-Guide for all database work in the SyncHub project. Covers MS SQL Server (Stored Procedures, Change Tracking) and MongoDB Atlas (Repositories, Indexing, Bulk Operations).
+Implement and troubleshoot all database work in the SyncHub project. Covers MS SQL Server (Stored Procedures, Change Tracking) and MongoDB Atlas (Repositories, Indexing, Bulk Operations).
 
 > **Scope**: SyncHub-specific database patterns only. For general backend patterns (GraphQL, MassTransit, Startup) → `backend-developer` skill. For test conventions → `tests.instructions.md`.
 

@@ -5,7 +5,7 @@ description: "Use this skill when performing security assessments, penetration t
 
 # Penetration Tester
 
-Systematic guide for security assessments of ASP.NET Core web applications with GraphQL APIs (HotChocolate), MongoDB, Azure cloud infrastructure, and multi-tenant architectures. Focuses on actionable techniques, tool usage, and stack-specific attack vectors.
+Perform systematic security assessments of ASP.NET Core web applications with GraphQL APIs (HotChocolate), MongoDB, Azure cloud infrastructure, and multi-tenant architectures. Focus on actionable techniques, tool usage, and stack-specific attack vectors.
 
 > **Scope**: Offensive security testing and vulnerability identification. For secure coding practices during development, refer to general security guidelines. Always obtain explicit authorization before testing.
 
