@@ -17,6 +17,11 @@
 
 https://github.com/kuzudb/kuzu-mcp-server
 https://github.com/predictable-labs/ryugraph 
+oder besser
+Setup mit der OpenSource version von Neo4j
+https://neo4j.com/open-source-project/ 
+https://www.youtube.com/playlist?list=PLriKR1xQz6aJAcpZaVeXB_Cy37uhIE-uz
+
 
 
 - DotNet MCP für Office Documents bauen
