@@ -1,25 +1,26 @@
 ---
 name: email-template-developer
-description: "Use this skill when working on email, SMS, or push notification templates — authoring Handlebars HTML email templates in Fusion-Notification-Core-Templates (ADO), understanding the backend template engine in sl-chid-notification (GitHub), visual testing with Playwright, or managing multi-tenant template deployment. Triggers on: body.hbs.html, subject.hbs.txt, Handlebars email templates, notification templates, Swiss Life email branding, _MASTER_TEMPLATE, template screenshots, Playwright visual regression, testi.at, Fusion-Notification-Core-Templates, sl-chid-notification, notification tenancy, template blob storage, EMAIL/SMS/PUSH channels, or cross-client HTML email compatibility."
+description: "Use this skill when working on email, SMS, or push notification templates — authoring Handlebars HTML email templates, understanding the backend template engine, visual testing with Playwright, or managing multi-tenant template deployment. Triggers on: body.hbs.html, subject.hbs.txt, Handlebars email templates, notification templates, email branding, _MASTER_TEMPLATE, template screenshots, Playwright visual regression, notification tenancy, template blob storage, EMAIL/SMS/PUSH channels, or cross-client HTML email compatibility."
 ---
 
 # Email Template Developer
 
-Author and maintain Swiss Life notification templates across the Handlebars template ecosystem. Covers template authoring conventions, HTML email constraints, visual testing, backend template processing, and multi-tenant deployment.
+Author and maintain notification templates across the Handlebars template ecosystem. Covers template authoring conventions, HTML email constraints, visual testing, backend template processing, and multi-tenant deployment.
 
-> **Scope**: Template authoring in Fusion-Notification-Core-Templates (ADO) and backend template engine understanding in sl-chid-notification (GitHub). For general backend service work, use the `backend-developer` skill.
+> **Scope**: Template authoring and backend template engine understanding. For general backend service work, use the `backend-developer` skill.
 
 ## Repositories
 
+<!-- TODO: Replace with your actual repository locations -->
 | Repo | Location | Purpose |
 |---|---|---|
-| Fusion-Notification-Core-Templates | Azure DevOps `F2C` project | Template authoring, Handlebars HTML, visual testing |
-| sl-chid-notification | GitHub `sl-ch-ops/sl-chid-notification` | Backend notification service, template engine, tenant config |
+| Notification-Templates | <!-- TODO: Add location --> | Template authoring, Handlebars HTML, visual testing |
+| Notification-Service | <!-- TODO: Add location --> | Backend notification service, template engine, tenant config |
 
 ## Template Directory Structure
 
 ```
-Fusion-Notification-Core-Templates/
+Notification-Templates/
 ├── .github/
 │   ├── instructions/
 │   │   └── copilot.instructions.md     # HTML email development guidelines
@@ -58,7 +59,7 @@ Fusion-Notification-Core-Templates/
 1. **ALWAYS use `_MASTER_TEMPLATE` as base** for new email templates — never start from scratch.
 2. **4 languages always**: DE, EN, FR, IT — every template must have all 4 language variants.
 3. **No translations in `body.hbs.html`** — the HTML body structure is identical across languages. Only `subject.hbs.txt` differs per language.
-4. **Preserve German block comment anchors** — comments like `<!-- Content 1-spaltig -->`, `<!-- Adressleiste Swiss Life AG -->` serve as structural markers and must be kept.
+4. **Preserve block comment anchors** — comments like `<!-- Content 1-spaltig -->`, `<!-- Address block -->` serve as structural markers and must be kept.
 5. **Stay under ~100kB** per template to avoid Gmail truncation.
 
 ## Existing Copilot Prompts
@@ -105,10 +106,10 @@ Target clients (last 24 months): **Apple Mail, Outlook (classic + new), Gmail, Y
 <table role="presentation" width="100%" style="background-color: #f4f4f4;">
   <tr><td align="center">
     <table width="620" style="max-width: 620px;">
-      <!-- Swiss Life Logo -->
+      <!-- Logo -->
       <!-- Content 1-spaltig -->
       <!-- Content 2-spaltig (optional) -->
-      <!-- Adressleiste Swiss Life AG -->
+      <!-- Address block -->
       <!-- Disclaimer -->
     </table>
   </td></tr>
@@ -119,11 +120,12 @@ Target clients (last 24 months): **Apple Mail, Outlook (classic + new), Gmail, Y
 
 Keep templates compact. Refactor verbose markup into block-based structure. Remove redundant inline styles by consolidating shared styles. Minimize whitespace in production templates.
 
-## Swiss Life Brand Colors
+## Brand Colors
 
+<!-- TODO: Replace with your organization's brand colors -->
 | Name | RGB | Hex |
 |---|---|---|
-| swisslife-red | `rgb(216, 32, 52)` | `#D82034` |
+| primary-red | `rgb(216, 32, 52)` | `#D82034` |
 | anthrazit | `rgb(53, 53, 53)` | `#353535` |
 | white | `rgb(255, 255, 255)` | `#FFFFFF` |
 | light-grey | `rgb(244, 244, 244)` | `#F4F4F4` |
@@ -255,11 +257,12 @@ enum ContentFieldType { Body, Subject }
 
 ### Tenants
 
+<!-- TODO: Replace with your actual tenant configuration -->
 | Tenant | ID | Default Lang | Supported Languages |
 |---|---|---|---|
-| Fusion | `fusion` | de | de, fr, it, en |
-| MyLife | `mylife` | de | de, fr, it, en |
-| CorporateClients | `corporateclients` | de | de, fr, it, en |
+| TenantA | `tenanta` | de | de, fr, it, en |
+| TenantB | `tenantb` | de | de, fr, it, en |
+| TenantC | `tenantc` | de | de, fr, it, en |
 
 Each tenant has:
 - **Isolated blob storage** for templates (own container)
@@ -291,7 +294,7 @@ Templates = new TemplateProvidersConfiguration
 
 ### Template Deployment
 
-1. **Create** templates in `Fusion-Notification-Core-Templates` repo
+1. **Create** templates in the Notification-Templates repo
 2. **Test** with Playwright screenshots and `global_testdata.json`
 3. **Upload** to tenant-specific Azure Blob Storage
 4. **Verify** by sending test notifications in the tenant context

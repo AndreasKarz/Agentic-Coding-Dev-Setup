@@ -1,13 +1,13 @@
 ---
 name: database-specialist
-description: "Specialist for SyncHub data-pipeline implementation — writing change-tracker and data-loader configurations, stored procedure integration, MongoDB repository code, DI registration, and Squadron-based database tests. Triggers: SqlClient, SqlConnection, SqlCommand, StoredProcedure, SqlExecutionContext, SqlChangeTracker, SqlDataLoader, IMongoCollection, BsonDocument, MongoConventions, SourceRepository, DomainEntityRepository, BulkWriteAsync, IAsyncCursor, MongoResource, SqlServerResource, SyncHub_Database, SyncHub_Connections, ConnectionsOptions, Change-Tracker-Cron, Quartz-Scheduling, new SyncHub entity setup."
+description: "Specialist for data-pipeline implementation — writing change-tracker and data-loader configurations, stored procedure integration, MongoDB repository code, DI registration, and Squadron-based database tests. Triggers: SqlClient, SqlConnection, SqlCommand, StoredProcedure, SqlExecutionContext, SqlChangeTracker, SqlDataLoader, IMongoCollection, BsonDocument, MongoConventions, SourceRepository, DomainEntityRepository, BulkWriteAsync, IAsyncCursor, MongoResource, SqlServerResource, Pipeline_Database, Pipeline_Connections, ConnectionsOptions, Change-Tracker-Cron, Quartz-Scheduling, new data pipeline entity setup."
 ---
 
-# Database Specialist — SyncHub
+# Database Specialist — Data Pipeline
 
-Implement and troubleshoot SyncHub data-pipeline code: change-tracker jobs, data-loader configurations, SQL stored procedure integration, MongoDB repository patterns, and database tests.
+Implement and troubleshoot data-pipeline code: change-tracker jobs, data-loader configurations, SQL stored procedure integration, MongoDB repository patterns, and database tests.
 
-> **Scope**: SyncHub pipeline implementation only.
+> **Scope**: data pipeline implementation only.
 > - For **MongoDB analysis, indexing strategy, and query optimization** → delegate to `MongoDB Expert` agent.
 > - For **SQL Server query optimization, execution plans, and schema design** → delegate to `MS-SQL Expert` agent.
 > - For general backend patterns (GraphQL, MassTransit, Startup) → `backend-developer` skill.
@@ -15,7 +15,7 @@ Implement and troubleshoot SyncHub data-pipeline code: change-tracker jobs, data
 
 ## Architecture Overview
 
-SyncHub is a data pipeline that synchronizes source data (MS SQL) into a MongoDB target database:
+The data pipeline is a system that synchronizes source data (MS SQL) into a MongoDB target database:
 
 ```
 SQL Server (Stored Procedures)
@@ -34,7 +34,7 @@ SQL Server (Stored Procedures)
 | SQL Configurations | `src/Abstractions/Configuration/` |
 | Change Tracker & Loader | `src/Core/ChangeTracker/`, `src/Core/Loader/` |
 | MongoDB Repositories | `src/Repository/` |
-| DI Registration | `src/Core/SyncHubCoreCollectionExtensions.cs` |
+| DI Registration | `src/Core/DataPipelineCoreCollectionExtensions.cs` |
 | Domain Configuration | `src/Repository/ConfigureDomainSettings.cs` |
 | Tests | `test/` |
 
@@ -145,7 +145,7 @@ public class SqlLoaderConfiguration : ILoaderConfiguration
 Connection strings are **not** stored directly in configurations but resolved via `ConnectionsOptions`:
 
 ```
-Config section: SyncHub_Connections
+Config section: Pipeline_Connections
   → ConnectionsOptions (name/value pairs)
     → Loader/Tracker call Resolve(ConnectionsOptions)
 ```
@@ -181,7 +181,7 @@ Extends `TrackableJob`. Pipeline flow:
 6. Store new transaction ID in MongoDB (`{entity}_transactions`)
 7. Trigger DomainProcessor
 
-OpenTelemetry tracing with `Activity` and `synchub.changetracker.*` tags is mandatory.
+OpenTelemetry tracing with `Activity` and `datapipeline.changetracker.*` tags is mandatory.
 
 ### Domain Configuration
 
@@ -202,10 +202,10 @@ DomainSettings:Configurations → Array of configurations
 
 | Section | Purpose |
 |---|---|
-| `SyncHub_Connections` | Named connection strings (name/value) |
-| `SyncHub_Database` | MongoDB ConnectionString + DatabaseName |
-| `SyncHub_Messaging` | Service Bus configuration |
-| `SyncHub_Audit` | Audit settings |
+| `Pipeline_Connections` | Named connection strings (name/value) |
+| `Pipeline_Database` | MongoDB ConnectionString + DatabaseName |
+| `Pipeline_Messaging` | Service Bus configuration |
+| `Pipeline_Audit` | Audit settings |
 | `DomainSettings:Configurations` | Loader and tracker definitions |
 | `DomainSettings:HostSettings` | Host-specific settings |
 
@@ -351,11 +351,11 @@ Builders<PipelineAuditEntry>.IndexKeys
 ### Core Services
 
 ```csharp
-// SyncHubCoreCollectionExtensions.cs
-services.AddSyncHubCore();  // SqlChangeTracker, ServiceBusChangeTracker, etc.
+// DataPipelineCoreCollectionExtensions.cs
+services.AddDataPipelineCore();  // SqlChangeTracker, ServiceBusChangeTracker, etc.
 
 services.AddDomains<TDomainReference>();  // ConnectionsOptions, DomainsResolver
-// → Registers ConnectionsOptions from SyncHub_Connections
+// → Registers ConnectionsOptions from Pipeline_Connections
 
 services.AddScheduling();  // Quartz jobs: SqlChangeTrackerJob, AuditJob, DomainProcessorJob
 ```
@@ -365,7 +365,7 @@ services.AddScheduling();  // Quartz jobs: SqlChangeTrackerJob, AuditJob, Domain
 ```csharp
 // ConnectionsOptions from named section
 services.Configure<ConnectionsOptions>(
-    configuration.GetSection("SyncHub_Connections"));
+    configuration.GetSection("Pipeline_Connections"));
 ```
 
 ## Database Tests
@@ -429,10 +429,10 @@ mongoResource.CreateDatabase(new CreateDatabaseFromFilesOptions
 
 ```csharp
 // Override test appsettings
-configuration["SyncHub_Database:ConnectionString"] = mongoResource.ConnectionString;
-configuration["SyncHub_Database:DatabaseName"] = database.DatabaseNamespace.DatabaseName;
-configuration["SyncHub_Connections:Values:0:Name"] = "MyConnection";
-configuration["SyncHub_Connections:Values:0:Value"] = sqlResource.ConnectionString;
+configuration["Pipeline_Database:ConnectionString"] = mongoResource.ConnectionString;
+configuration["Pipeline_Database:DatabaseName"] = database.DatabaseNamespace.DatabaseName;
+configuration["Pipeline_Connections:Values:0:Name"] = "MyConnection";
+configuration["Pipeline_Connections:Values:0:Value"] = sqlResource.ConnectionString;
 ```
 
 ### Snapshooter for Result Verification
@@ -445,12 +445,12 @@ result.MatchSnapshot();
 
 ## Checklist for New Entities
 
-When setting up a new SyncHub entity:
+When setting up a new data pipeline entity:
 
 1. **SQL Stored Procedure** — Ensure the SP exists and returns the expected columns
 2. **SqlLoaderConfiguration** — Define loader configuration with correct SP and connection
 3. **SqlChangeTrackerConfiguration** — Define tracker with SP, Cron schedule, and connection
-4. **ConnectionsOptions** — Register named connection string in `SyncHub_Connections`
+4. **ConnectionsOptions** — Register named connection string in `Pipeline_Connections`
 5. **MongoDB Collections** — Created automatically, but verify indexes
 6. **Domain-specific indexes** — Define on `Entity.*` fields when queries are needed
 7. **Tests** — Repository tests with Squadron + Snapshooter, system tests with both DBs

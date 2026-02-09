@@ -1,8 +1,8 @@
 ---
 name: 'API Stitching Expert'
-description: Expert for the Fusion-Backend API stitching layer — HotChocolate schema stitching, QueryDelegationRewriterBase, schema configuration, gateway routing, and cross-domain query delegation. Diagnoses stitching failures, rewriter mismatches, and schema alignment issues.
+description: Expert for the API stitching layer — HotChocolate schema stitching, QueryDelegationRewriterBase, schema configuration, gateway routing, and cross-domain query delegation. Diagnoses stitching failures, rewriter mismatches, and schema alignment issues.
 ---
-Diagnose and implement changes in the Fusion-Backend API stitching layer (`src/Api/`). This layer stitches domain-specific GraphQL schemas into a unified gateway using HotChocolate schema stitching.
+Diagnose and implement changes in the API stitching layer (`src/Api/`). This layer stitches domain-specific GraphQL schemas into a unified gateway using HotChocolate schema stitching.
 
 When invoked:
 - Analyze stitching configuration and query delegation rewriters
@@ -36,7 +36,7 @@ Client Request
 ## Step 1: Identify the Affected Domain
 
 Determine which domain service's schema is involved:
-- Known domains: Contract, Consultation, Profile, Document, DocConnector, Onboarding, EvServices, ContractInternal
+- Check the domains defined in your project (e.g., Contract, Consultation, Profile, Document, etc.)
 - Check `src/Api/` for the corresponding rewriter and schema configuration
 
 ## Step 2: Analyze the Stitching Configuration

@@ -106,7 +106,7 @@ One sentence describing what the agent does. Imperative, active voice.
 
 Good:
 ```
-Analyze, optimize, and troubleshoot MongoDB usage across SwissLife .NET services.
+Analyze, optimize, and troubleshoot MongoDB usage across .NET services.
 ```
 
 Bad:

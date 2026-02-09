@@ -10,7 +10,8 @@ applyTo: "**"
 # Application Structure
 
 ## Architecture Overview
-This is a Fusion Backend application following micro-service-oriented architecture with MongoDB as the primary database. 
+<!-- TODO: Replace with your application name and description -->
+This is a backend application following micro-service-oriented architecture with MongoDB as the primary database. 
 The system is organized into domain-specific services, each containing their own business logic, data access, and API layers.
 
 ## Technology Stack
@@ -23,7 +24,8 @@ The system is organized into domain-specific services, each containing their own
 
 ### Project Structure
 ```
-Fusion-Backend/
+<!-- TODO: Replace "My-Backend" with your actual repository name -->
+My-Backend/
 ├── .github/
 │   └── instructions/           # Coding standards and guidelines
 ├── src/

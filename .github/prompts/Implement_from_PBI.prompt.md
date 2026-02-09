@@ -26,7 +26,7 @@ Do NOT proceed until you have a valid numeric Work Item ID.
 
 Use Azure DevOps MCP tools to gather the full picture. Execute these steps in order:
 
-1. **Fetch the PBI** — retrieve the work item by ID (project: `F2C`). Extract: title, description, acceptance criteria, state, assigned to, iteration, area path.
+1. **Fetch the PBI** — retrieve the work item by ID (project: `<!-- TODO: Replace with your ADO project name -->`). Extract: title, description, acceptance criteria, state, assigned to, iteration, area path.
 2. **Fetch the Parent** — if the PBI has a parent link, retrieve it. Understand the epic/feature context and any overarching requirements or constraints.
 3. **Fetch all Children** — if the PBI has child work items (tasks, sub-items), retrieve each one. Map out the full scope of work including task breakdown, estimates, and any already-completed tasks.
 4. **Fetch linked items** — check for related work items, predecessor/successor links, or referenced PRs that provide additional context.
@@ -62,7 +62,7 @@ Present this summary and confirm understanding before proceeding.
 
 Identify the affected domain service(s) and analyze the existing code:
 
-1. **Locate the domain** — determine which domain service(s) under `src/` are affected (Contract, Consultation, Profile, Document, DocConnector, Onboarding, EvServices, ContractInternal).
+2. **Locate the domain** — determine which domain service(s) under `src/` are affected.
 2. **Map the layers** — for each affected domain, inspect the relevant layers (Abstractions, Core, DataAccess, GraphQL, Host, Worker) to understand the current structure.
 3. **Trace related code** — find existing models, services, repositories, resolvers, consumers, and types that relate to the PBI's functionality. Use search, usages, and file reads.
 4. **Identify patterns** — note which patterns the existing code uses (repository pattern, DataLoader, MassTransit consumers, mutation conventions) so the new code stays consistent.

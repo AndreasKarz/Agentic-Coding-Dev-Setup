@@ -1,11 +1,11 @@
 ---
 name: code-reviewer
-description: "Performs a strict code review on current branch changes, applying SwissLife Backend standards and the review style of lead architect. Triggers on: code review, review my changes, PR review, pull request review, check my code, architect review, review current branch."
+description: "Performs a strict code review on current branch changes, applying project Backend standards and the review style of a lead architect. Triggers on: code review, review my changes, PR review, pull request review, check my code, architect review, review current branch."
 ---
 
 # Code Review Agent
 
-Review the **current changes** in this branch as a Senior Backend Architect, strictly applying SwissLife internal guidelines and lead architect review standards.
+Review the **current changes** in this branch as a Senior Backend Architect, strictly applying project-internal guidelines and lead architect review standards.
 
 ## Step 1: Establish Review Scope
 
@@ -16,9 +16,9 @@ Identify what has changed compared to the base branch (`master` or `main`).
 ## Step 2: Acquire Standards Context
 
 Fetch governing standards via ADO MCP tools. If tools fail, ask the user for these files.
-1. **Backend Handbook**: Wiki Page `Backend-Developer-Handbook` (ID `13682`) in project `CTRM` — naming, error handling, architecture rules.
-2. **Coding Guidelines**: Wiki Page `Backend-Coding-Guidelines` (ID `13683`) in project `CTRM` — naming conventions, test standards.
-3. **Repo README**: `/readme.md` from `F2C/Fusion-Backend` — architectural constraints.
+1. **Backend Handbook**: <!-- TODO: Replace with your wiki page reference --> Wiki Page for coding standards and architecture rules.
+2. **Coding Guidelines**: <!-- TODO: Replace with your wiki page reference --> Wiki Page for naming conventions and test standards.
+3. **Repo README**: `/readme.md` from your main backend repository — architectural constraints.
 4. **Loaded instruction files**: Apply `general.instructions.md` and `tests.instructions.md` which are already in context.
 
 ## Step 3: Apply Review Criteria
@@ -50,7 +50,7 @@ Use Sequential Thinking to process each changed file against the full checklist 
 
 ### Type Safety (IMPROVEMENT → BLOCKER if causes deadletters)
 
-- **Enum over string** — when only specific values are accepted, use an enum. Unknown values passing through SyncHub to Fusion-Backend cause deadletters
+- **Enum over string** — when only specific values are accepted, use an enum. Unknown values in data pipelines cause deadletters
 - **Prefer null over empty string** — for optional/absent values, field should be nullable and return `null`, not `""`
 - **No `dynamic`** — ever
 - **Nullable reference issues** — zero tolerance for new nullable warnings

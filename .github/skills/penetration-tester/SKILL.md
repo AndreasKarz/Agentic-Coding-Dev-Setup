@@ -191,7 +191,7 @@ public_key = open("public.pem").read()
 
 # Sign with HS256 using the public key as secret
 forged_token = jwt.encode(
-    {"sub": "admin", "role": "admin", "tenant": "fusion"},
+    {"sub": "admin", "role": "admin", "tenant": "primary"},
     public_key,
     algorithm="HS256"
 )
@@ -232,7 +232,7 @@ curl -X POST https://target/graphql \
 # Request broader scopes than authorized
 curl -X POST https://auth/oauth/token \
   -d "client_id=app&client_secret=secret&grant_type=client_credentials" \
-  -d "scope=api.notification.access notification.tenant.fusion notification.tenant.mylife"
+  -d "scope=api.notification.access notification.tenant.tenantA notification.tenant.tenantB"
 
 # Test if token with one tenant scope can access another tenant's resources
 ```
@@ -337,7 +337,7 @@ curl -s "https://{account}.blob.core.windows.net/templates?restype=container&com
 az keyvault secret list --vault-name {vault-name}
 az keyvault secret show --vault-name {vault-name} --name {secret-name}
 
-# Configuration paths like "Tenants:Fusion:SendGrid:ApiKey" resolve to Key Vault
+# Configuration paths like "Tenants:Primary:SendGrid:ApiKey" resolve to Key Vault
 # Verify: secrets are not logged, not in environment variables, not in appsettings
 ```
 

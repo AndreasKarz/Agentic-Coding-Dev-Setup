@@ -1,11 +1,11 @@
 ---
 name: backend-developer
-description: "Use this skill when working on Fusion-Backend or SyncHub microservices — implementing GraphQL APIs with HotChocolate, writing MassTransit consumers/publishers, building MongoDB data access layers, configuring service startup, integrating SyncHub pipelines, or adding observability with OpenTelemetry. Triggers on: GraphQL resolvers, ObjectType, TypeExtensions, QueryRewriter, field middleware, DataLoaders, MassTransit IConsumer, Azure Service Bus, MongoDB repositories, SyncHub sender/receiver, service startup configuration, or any Fusion-Backend domain service work."
+description: "Use this skill when working on backend microservices — implementing GraphQL APIs with HotChocolate, writing MassTransit consumers/publishers, building MongoDB data access layers, configuring service startup, integrating data pipelines, or adding observability with OpenTelemetry. Triggers on: GraphQL resolvers, ObjectType, TypeExtensions, QueryRewriter, field middleware, DataLoaders, MassTransit IConsumer, Azure Service Bus, MongoDB repositories, data pipeline sender/receiver, service startup configuration, or any backend domain service work."
 ---
 
 # Backend Developer
 
-Guide for developing Fusion-Backend and SyncHub microservices. Covers domain-specific patterns, conventions, and SwissLife internal libraries that Claude does not inherently know.
+Guide for developing backend microservices. Covers domain-specific patterns, conventions, and internal libraries that the AI agent does not inherently know.
 
 > **Scope**: This skill covers project-specific patterns and conventions only. For general C# best practices, refer to the CSharpExpert agent. For testing conventions, follow `tests.instructions.md`.
 
@@ -13,7 +13,7 @@ Guide for developing Fusion-Backend and SyncHub microservices. Covers domain-spe
 
 Architecture, layer definitions, dependency rules, and coding standards are defined in `general.instructions.md` (always loaded). The following covers domain-specific patterns only.
 
-**Known domains**: Contract, Consultation, Profile, Document, DocConnector, Onboarding, EvServices, ContractInternal.
+**Known domains**: <!-- TODO: List your domain services here, e.g., Contract, Consultation, Profile, Document, etc. -->
 
 ### API Stitching Layer
 
@@ -195,7 +195,7 @@ public class ProfilePublisherTests
 
 ### OpenTelemetry Tracing
 
-Use `SwissLife.Observability.App` for all tracing. Start activities in every consumer/service method:
+Use a centralized activity source for all tracing. Start activities in every consumer/service method:
 
 ```csharp
 using Activity? activity = App.ActivitySource.StartActivity();
@@ -260,14 +260,15 @@ public class StartUp
 }
 ```
 
-### SwissLife Internal Libraries
+### Internal Libraries
 
+<!-- TODO: Replace with your organization's internal libraries -->
 | Library | Purpose |
 |---|---|
-| `SwissLife.Security.Authentication.JwtBearer` | JWT Bearer auth setup |
-| `SwissLife.Health.*` | Health check extensions (Mongo, etc.) |
-| `SwissLife.Observability.*` | `App.ActivitySource`, `App.Log` |
-| `SwissLife.Fusion.*` | Domain-specific shared code |
+| `YourOrg.Security.Authentication.JwtBearer` | JWT Bearer auth setup |
+| `YourOrg.Health.*` | Health check extensions (Mongo, etc.) |
+| `YourOrg.Observability.*` | Activity sources and structured logging |
+| `YourOrg.{ProjectName}.*` | Domain-specific shared code |
 
 ### Authentication & Authorization
 
@@ -292,18 +293,18 @@ services.AddGraphQLServer()
 
 External API clients live in `ServiceReferences/Generated/`. Never edit generated files. Register via DI and consume through the generated client interfaces.
 
-## SyncHub Integration
+### Data Pipeline Integration
 
 ### API Host
 
 ```csharp
-SyncHubApi.Create<Startup>(SetupConfiguration, args);
+DataPipelineApi.Create<Startup>(SetupConfiguration, args);
 ```
 
 ### Worker Host
 
 ```csharp
-SyncHubHost.Create<DomainsReference>(SetupConfiguration, configureServices, args);
+DataPipelineHost.Create<DomainsReference>(SetupConfiguration, configureServices, args);
 ```
 
 ### Messaging
@@ -311,17 +312,18 @@ SyncHubHost.Create<DomainsReference>(SetupConfiguration, configureServices, args
 Register sender/receiver in DI:
 
 ```csharp
-services.AddSyncHubReceiver<MyWorker>();
-services.AddSyncHubSender();
+services.AddDataPipelineReceiver<MyWorker>();
+services.AddDataPipelineSender();
 ```
 
 Use `IMessageSender<T>` and `IMessageSenderFactory` for sending messages.
 
 ### Tenant Structure
 
-SyncHub uses tenant-based organization:
-- `src/Tenants/Fusion/` — Fusion tenant (Api + Host)
-- `src/Tenants/MyContracts/` — MyContracts tenant
+The data pipeline uses tenant-based organization:
+<!-- TODO: Replace with your actual tenant names -->
+- `src/Tenants/TenantA/` — Primary tenant (Api + Host)
+- `src/Tenants/TenantB/` — Secondary tenant
 
 ### Partial Program Pattern
 
@@ -332,7 +334,7 @@ Environment-specific config via partial classes:
 
 ### Shared Config
 
-Shared appsettings live in `_Links/` directories, e.g., `_Links/Fusion.Domains/appsettings.shared.json`.
+Shared appsettings live in `_Links/` directories, e.g., `_Links/{TenantName}.Domains/appsettings.shared.json`.
 
 ## MongoDB Data Access
 

@@ -1,26 +1,26 @@
 ---
 name: devops-specialist
-description: "Deep domain knowledge for SwissLife F2C DevOps — Azure DevOps pipeline templates, Docker multi-stage builds, Helm/K8s deployment patterns, environment promotion flow, Confix configuration management, and pipeline troubleshooting. Triggers on: azure-pipelines YAML, Dockerfile, Helm values.yaml, k8s-deployment, Confix decrypt, ACR push, environment promotion A/UAT/PAV, release pipeline, pipeline template, HelmChartVersion, k8s-vars, service connection, pod CrashLoopBackOff, ImagePullBackOff."
+description: "Deep domain knowledge for DevOps — Azure DevOps pipeline templates, Docker multi-stage builds, Helm/K8s deployment patterns, environment promotion flow, Confix configuration management, and pipeline troubleshooting. Triggers on: azure-pipelines YAML, Dockerfile, Helm values.yaml, k8s-deployment, Confix decrypt, ACR push, environment promotion A/UAT/PAV, release pipeline, pipeline template, HelmChartVersion, k8s-vars, service connection, pod CrashLoopBackOff, ImagePullBackOff."
 ---
 
-# DevOps Specialist — SwissLife F2C
+# DevOps Specialist
 
-Domain knowledge for CI/CD pipelines, Docker builds, Helm/K8s deployments, and environment promotion in the SwissLife F2C ecosystem.
+Domain knowledge for CI/CD pipelines, Docker builds, Helm/K8s deployments, and environment promotion.
 
-> **Scope**: F2C-specific DevOps patterns only. For general DevOps workflow and investigation → `DevOps Expert` agent.
+> **Scope**: Project-specific DevOps patterns only. For general DevOps workflow and investigation → `DevOps Expert` agent.
 
 ## Azure DevOps Organization
 
+<!-- TODO: Replace with your actual Azure DevOps project names and purposes -->
 | Project | Purpose |
 |---|---|
-| **F2C** | Main development — Fusion-Backend, domain services, F2C-Pipeline-Templates |
-| **CTRM** | Change/Test/Release Management — wikis, release process docs, Backend-Developer-Handbook |
-| **I_IaC** | Infrastructure as Code — Terraform modules, Azure resource provisioning |
-| **P_ITWorkbench / CS_ITWorkbench / U_ITWorkbench** | Workbench projects for P, CS, U tenants |
+| **Main** | Main development — Backend services, Pipeline-Templates |
+| **ReleaseManagement** | Change/Test/Release Management — wikis, release process docs, Developer-Handbook |
+| **IaC** | Infrastructure as Code — Terraform modules, Azure resource provisioning |
 
-Key repos in **F2C**:
-- **Fusion-Backend** — main monorepo for all domain services
-- **F2C-Pipeline-Templates** — shared pipeline templates (`Deployment/k8s-deployment.yaml`, variable templates)
+Key repos in the **Main** project:
+- **My-Backend** — main monorepo for all domain services
+- **Pipeline-Templates** — shared pipeline templates (`Deployment/k8s-deployment.yaml`, variable templates)
 
 ## Branching Strategy
 
@@ -54,7 +54,7 @@ GitHub Flow:
     └── template.test-pr.yml
 ```
 
-### Shared Templates (F2C-Pipeline-Templates)
+### Shared Templates (Pipeline-Templates)
 
 K8s Deployment Template (`Deployment/k8s-deployment.yaml`) key parameters:
 
@@ -62,7 +62,7 @@ K8s Deployment Template (`Deployment/k8s-deployment.yaml`) key parameters:
 |---|---|
 | `DockerImageName` | Docker image name |
 | `HelmReleaseName` | Helm release name in cluster |
-| `HelmChartName` | Defaults to `f2c-deployment-ng` |
+| `HelmChartName` | Defaults to `deployment-ng` (<!-- TODO: replace with your chart name -->) |
 | `HelmChartVersion` | Chart version (e.g., `12.12.0`) |
 | `Environment` | Target: A, A2, UAT, UAT2, PAV, PAV2, DEV001 |
 | `Namespace` | Kubernetes namespace |
@@ -136,7 +136,7 @@ docker/<service-name>/
 3. **Confix Decrypt** — `dotnet confix decrypt` via Azure CLI service connection
 4. Split `BffContainer` from `appsettings.json` → `appsettings.bff.json`
 5. Helm login: `helm registry login $(HelmRepoName).azurecr.io`
-6. Helm pull: `oci://$(HelmRepoName).azurecr.io/f2c-deployment-ng`
+6. Helm pull: `oci://$(HelmRepoName).azurecr.io/deployment-ng`
 7. **Helm upgrade** `--atomic --timeout=600s --create-namespace` with environment values
 8. Teams notification
 
@@ -144,9 +144,9 @@ docker/<service-name>/
 
 ```
 image.name, image.repository=$(ACR), image.tag=$(Build.SourceBranchName)
-env.SWISSLIFE_ENVIRONMENT, env.SWISSLIFE_VAULT, env.ASPNETCORE_ENVIRONMENT
+env.DEPLOYMENT_ENVIRONMENT, env.DEPLOYMENT_VAULT, env.ASPNETCORE_ENVIRONMENT
 env.OTEL_EXPORTER_OTLP_ENDPOINT, env.REMOTE_CONFIGURATION_URL
-envSecrets.SWISSLIFE_DECRYPTIONKEY, envSecrets.SWISSLIFE_SHAREDSECRET
+envSecrets.DEPLOYMENT_DECRYPTIONKEY, envSecrets.DEPLOYMENT_SHAREDSECRET
 envSecrets.REMOTE_CONFIGURATION_TOKEN
 ```
 
@@ -168,7 +168,7 @@ Encrypts `appsettings.json` at rest. Pipeline decrypts using `$(ConfixDecryptSer
 
 ### Azure Key Vault
 
-Secrets via `SWISSLIFE_VAULT` + `SWISSLIFE_DECRYPTIONKEY`. Managed Identity in production.
+Secrets via `DEPLOYMENT_VAULT` + `DEPLOYMENT_DECRYPTIONKEY`. Managed Identity in production.
 
 ## Infrastructure as Code
 

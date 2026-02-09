@@ -102,7 +102,7 @@ The configuration is written to these files:
 
 ### Setup for MonoRepos
 
-In a MonoRepo setup (e.g., `Fusion-Backend/`), you want to use the `.github/` artifacts (Instructions, Skills, Agents, Prompts) **without copying them to each repository**. The solution: **Symbolic Links (Symlinks)**.
+In a MonoRepo setup (e.g., `My-Backend/`), you want to use the `.github/` artifacts (Instructions, Skills, Agents, Prompts) **without copying them to each repository**. The solution: **Symbolic Links (Symlinks)**.
 
 #### Why Symlinks?
 
@@ -115,8 +115,8 @@ In a MonoRepo setup (e.g., `Fusion-Backend/`), you want to use the `.github/` ar
 Open an **administrative PowerShell** (or ensure Windows Developer Mode is active) and create the symlink in the target repository:
 
 ```powershell
-# In the target repository (e.g., Fusion-Backend)
-cd C:\Repos\Fusion-Backend
+# In the target repository (e.g., My-Backend)
+cd C:\Repos\My-Backend
 
 # Symlink for the entire .github folder
 New-Item -ItemType SymbolicLink -Path ".github" -Target "C:\Repos\Agentic-Coding-Dev-Setup\.github"
@@ -205,9 +205,9 @@ All AI-related artifacts are in the `.github/` folder and are automatically reco
 │   └── MSSQLExpert.agent.md       #   → Stored procedures, execution plans
 ├── skills/                        # Domain-specific knowledge
 │   ├── backend-developer/         #   → HotChocolate, MassTransit, MongoDB repos
-│   ├── code-reviewer/             #   → Code review per SwissLife standards
-│   ├── database-specialist/       #   → SyncHub pipeline implementation
-│   ├── devops-specialist/         #   → F2C pipeline templates, Helm, K8s patterns
+│   ├── code-reviewer/             #   → Code review per project standards
+│   ├── database-specialist/       #   → Data pipeline implementation
+│   ├── devops-specialist/         #   → Pipeline templates, Helm, K8s patterns
 │   ├── service-scaffolder/        #   → Scaffold new microservices end-to-end
 │   ├── prompt-creator/            #   → Write and optimize prompts
 │   └── ...                        #   → other skills (docx, pdf, xlsx, pptx, ...)
@@ -245,7 +245,7 @@ The `Implement_from_PBI` prompt guides you through the entire implementation pro
 4. **Phase 3 — Implementation Plan:** A step-by-step plan is created — you confirm it before code is written
 5. **Phase 4 — Implementation:** Step by step, compilation and tests run after each step
 6. **Phase 5 — Write Tests:** Unit tests per project conventions, target ≥82% coverage on new code
-7. **Phase 6 — Code Review:** The `code-reviewer` skill checks changes against SwissLife standards
+7. **Phase 6 — Code Review:** The `code-reviewer` skill checks changes against project standards
 
 > **Important:** The agent waits for your explicit confirmation after Phase 3. You always stay in control of the plan before code is generated.
 
@@ -298,7 +298,7 @@ The MCP servers are automatically available to the agent. You can ask it to acti
 
 "What does the schema of the 'contracts' collection look like in the database?"
 
-"Create an overview of the last 10 commits in the Fusion-Backend repo."
+"Create an overview of the last 10 commits in the My-Backend repo."
 ```
 
 ### Best Practices for Effective Work
@@ -335,7 +335,7 @@ After larger changes:
 "Review my current changes on this branch."
 ```
 
-The `code-reviewer` skill is automatically loaded and checks against SwissLife standards.
+The `code-reviewer` skill is automatically loaded and checks against project standards.
 
 #### 4. Validate Results
 

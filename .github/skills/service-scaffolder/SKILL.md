@@ -1,11 +1,11 @@
 ---
 name: service-scaffolder
-description: "Scaffold a new Fusion-Backend microservice end-to-end — create Abstractions, Core, DataAccess, GraphQL, Host, Worker projects with correct layer dependencies, DI wiring, health checks, and test projects. Triggers on: new service, new microservice, scaffold service, create service, add domain service, new domain, setup service skeleton."
+description: "Scaffold a new backend microservice end-to-end — create Abstractions, Core, DataAccess, GraphQL, Host, Worker projects with correct layer dependencies, DI wiring, health checks, and test projects. Triggers on: new service, new microservice, scaffold service, create service, add domain service, new domain, setup service skeleton."
 ---
 
 # Service Scaffolder
 
-Scaffold a complete Fusion-Backend domain microservice following the established project structure and conventions.
+Scaffold a complete backend domain microservice following the established project structure and conventions.
 
 > **Prerequisites**: Read `general.instructions.md` for architecture rules and layer definitions before scaffolding.
 
@@ -16,7 +16,7 @@ Follow these steps in order. Confirm the service name and scope with the user be
 ### Step 1: Gather Requirements
 
 Ask the user:
-1. **Service name** — PascalCase domain name (e.g., `Consultation`, `ContractInternal`)
+1. **Service name** — PascalCase domain name (e.g., `Consultation`, `Invoice`)
 2. **Layers needed** — default: all (Abstractions, Core, DataAccess, GraphQL, Host, Worker). Some services skip Worker.
 3. **Database** — MongoDB (default), SQL Server, or both
 4. **Messaging** — MassTransit consumers needed? (yes/no)
@@ -72,7 +72,8 @@ Create the foundational types:
 
 ```csharp
 // Models/{ServiceName}Entity.cs
-namespace SwissLife.Fusion.{ServiceName};
+// TODO: Replace with your organization namespace, e.g., YourOrg.YourProject
+namespace YourOrg.YourProject.{ServiceName};
 
 public record {ServiceName}Entity(
     ID<{ServiceName}Entity> Id,
@@ -81,7 +82,8 @@ public record {ServiceName}Entity(
 
 ```csharp
 // Interfaces/I{ServiceName}Repository.cs
-namespace SwissLife.Fusion.{ServiceName};
+// TODO: Replace with your organization namespace, e.g., YourOrg.YourProject
+namespace YourOrg.YourProject.{ServiceName};
 
 public interface I{ServiceName}Repository
 {
@@ -95,7 +97,8 @@ public interface I{ServiceName}Repository
 
 ```csharp
 // Services/{ServiceName}Service.cs
-namespace SwissLife.Fusion.{ServiceName};
+// TODO: Replace with your organization namespace, e.g., YourOrg.YourProject
+namespace YourOrg.YourProject.{ServiceName};
 
 public sealed class {ServiceName}Service(
     I{ServiceName}Repository _repository)
@@ -128,7 +131,8 @@ public static class {ServiceName}CoreServiceCollectionExtensions
 
 ```csharp
 // Repositories/{ServiceName}Repository.cs
-namespace SwissLife.Fusion.{ServiceName}.DataAccess;
+// TODO: Replace with your organization namespace, e.g., YourOrg.YourProject
+namespace YourOrg.YourProject.{ServiceName}.DataAccess;
 
 public sealed class {ServiceName}Repository : I{ServiceName}Repository
 {
@@ -173,7 +177,8 @@ public static class {ServiceName}DataAccessServiceCollectionExtensions
 
 ```csharp
 // Types/{ServiceName}EntityType.cs
-namespace SwissLife.Fusion.{ServiceName}.GraphQL;
+// TODO: Replace with your organization namespace, e.g., YourOrg.YourProject
+namespace YourOrg.YourProject.{ServiceName}.GraphQL;
 
 public class {ServiceName}EntityType : ObjectType<{ServiceName}Entity>
 {
@@ -204,7 +209,8 @@ public static class {ServiceName}Queries
 
 ```csharp
 // Startup.cs
-namespace SwissLife.Fusion.{ServiceName}.Host;
+// TODO: Replace with your organization namespace, e.g., YourOrg.YourProject
+namespace YourOrg.YourProject.{ServiceName}.Host;
 
 public class Startup
 {
